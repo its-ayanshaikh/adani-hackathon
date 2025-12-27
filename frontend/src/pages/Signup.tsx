@@ -1,68 +1,157 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Wrench, Mail, Lock, Eye, EyeOff, Loader2, User } from 'lucide-react';
+import {
+  Wrench,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+  User,
+  Check,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+// Email validation helper
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Password validation rules
+const passwordRules = [
+  { key: 'minLength', label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  { key: 'uppercase', label: 'One uppercase letter (A-Z)', test: (p: string) => /[A-Z]/.test(p) },
+  { key: 'lowercase', label: 'One lowercase letter (a-z)', test: (p: string) => /[a-z]/.test(p) },
+  { key: 'special', label: 'One special character (!@#$%^&*)', test: (p: string) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
+];
 
 export default function Signup() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const { signup } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Password validation status
+  const passwordValidation = useMemo(() => {
+    return passwordRules.map((rule) => ({
+      ...rule,
+      passed: rule.test(password),
+    }));
+  }, [password]);
+
+  const isPasswordValid = passwordValidation.every((rule) => rule.passed);
+
+  // Check if passwords match (only when confirmPassword has value)
+  const passwordsMatch = confirmPassword === '' || password === confirmPassword;
+  const showPasswordMismatch = confirmPassword !== '' && password !== confirmPassword;
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors };
+
+    switch (field) {
+      case 'firstName':
+        if (!value.trim()) {
+          newErrors.firstName = 'First name is required';
+        } else {
+          delete newErrors.firstName;
+        }
+        break;
+      case 'lastName':
+        if (!value.trim()) {
+          newErrors.lastName = 'Last name is required';
+        } else {
+          delete newErrors.lastName;
+        }
+        break;
+      case 'email':
+        if (!value) {
+          newErrors.email = 'Email is required';
+        } else if (!isValidEmail(value)) {
+          newErrors.email = 'Please enter a valid email address';
+        } else {
+          delete newErrors.email;
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return !newErrors[field];
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    if (field !== 'password' && field !== 'confirmPassword') {
+      validateField(field, field === 'firstName' ? firstName : field === 'lastName' ? lastName : email);
+    }
+  };
+
+  const validateAll = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!isValidEmail(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    if (!isPasswordValid) {
+      newErrors.password = 'Password does not meet requirements';
+    }
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (confirmPassword !== password) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    setTouched({
+      firstName: true,
+      lastName: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    });
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!name || !email || !password || !confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    if (password !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters",
-        variant: "destructive"
-      });
+    if (!validateAll()) {
       return;
     }
 
     setIsLoading(true);
-    const result = await signup(name, email, password);
+    const result = await signup(firstName, lastName, email, password);
     setIsLoading(false);
 
     if (result.success) {
       toast({
-        title: "Account created!",
-        description: "Welcome to MaintainX"
+        title: 'Account created!',
+        description: result.message,
       });
-      navigate('/');
+      navigate('/login');
     } else {
       toast({
-        title: "Signup failed",
+        title: 'Signup failed',
         description: result.message,
-        variant: "destructive"
+        variant: 'destructive',
       });
     }
   };
@@ -115,22 +204,52 @@ export default function Signup() {
 
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold">Create an account</h2>
-            <p className="text-muted-foreground mt-2">Get started with MaintainX today</p>
+            <p className="text-muted-foreground mt-2">
+              Get started with MaintainX today
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            {/* First Name & Last Name - 2 columns */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    onBlur={() => handleBlur('firstName')}
+                    className={cn(
+                      'pl-10',
+                      touched.firstName && errors.firstName && 'border-destructive focus-visible:ring-destructive'
+                    )}
+                  />
+                </div>
+                {touched.firstName && errors.firstName && (
+                  <p className="text-xs text-destructive">{errors.firstName}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
                 <Input
-                  id="name"
+                  id="lastName"
                   type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pl-10"
+                  placeholder="Doe"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  onBlur={() => handleBlur('lastName')}
+                  className={cn(
+                    touched.lastName && errors.lastName && 'border-destructive focus-visible:ring-destructive'
+                  )}
                 />
+                {touched.lastName && errors.lastName && (
+                  <p className="text-xs text-destructive">{errors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -144,9 +263,16 @@ export default function Signup() {
                   placeholder="name@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  onBlur={() => handleBlur('email')}
+                  className={cn(
+                    'pl-10',
+                    touched.email && errors.email && 'border-destructive focus-visible:ring-destructive'
+                  )}
                 />
               </div>
+              {touched.email && errors.email && (
+                <p className="text-sm text-destructive">{errors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -159,16 +285,46 @@ export default function Signup() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
+                  onBlur={() => handleBlur('password')}
+                  className={cn(
+                    'pl-10 pr-10',
+                    touched.password && !isPasswordValid && 'border-destructive focus-visible:ring-destructive'
+                  )}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
+
+              {/* Password Requirements Checklist */}
+              {password && (
+                <div className="mt-2 p-3 bg-muted/50 rounded-lg space-y-1.5">
+                  {passwordValidation.map((rule) => (
+                    <div
+                      key={rule.key}
+                      className={cn(
+                        'flex items-center gap-2 text-xs transition-colors',
+                        rule.passed ? 'text-green-600' : 'text-muted-foreground'
+                      )}
+                    >
+                      {rule.passed ? (
+                        <Check className="w-3.5 h-3.5" />
+                      ) : (
+                        <X className="w-3.5 h-3.5" />
+                      )}
+                      <span>{rule.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -181,22 +337,55 @@ export default function Signup() {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-10"
+                  onBlur={() => handleBlur('confirmPassword')}
+                  className={cn(
+                    'pl-10',
+                    showPasswordMismatch && 'border-destructive focus-visible:ring-destructive'
+                  )}
                 />
+                {/* Real-time match indicator */}
+                {confirmPassword && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {passwordsMatch ? (
+                      <Check className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <X className="w-5 h-5 text-destructive" />
+                    )}
+                  </div>
+                )}
               </div>
+              {/* Instant password mismatch error */}
+              {showPasswordMismatch && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <X className="w-3.5 h-3.5" />
+                  Passwords do not match
+                </p>
+              )}
             </div>
 
             <div className="flex items-start gap-2">
-              <input type="checkbox" className="rounded border-border mt-1" required />
+              <input
+                type="checkbox"
+                className="rounded border-border mt-1"
+                required
+              />
               <span className="text-sm text-muted-foreground">
                 I agree to the{' '}
-                <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>
-                {' '}and{' '}
-                <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                <Link to="/terms" className="text-primary hover:underline">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link to="/privacy" className="text-primary hover:underline">
+                  Privacy Policy
+                </Link>
               </span>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || showPasswordMismatch || (password !== '' && !isPasswordValid)}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -210,7 +399,10 @@ export default function Signup() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary hover:underline font-medium">
+            <Link
+              to="/login"
+              className="text-primary hover:underline font-medium"
+            >
               Sign in
             </Link>
           </p>

@@ -19,8 +19,15 @@ import RequestDetail from "./pages/RequestDetail";
 import NewRequest from "./pages/NewRequest";
 import TeamsList from "./pages/TeamsList";
 import TeamDetail from "./pages/TeamDetail";
+import TeamForm from "./pages/TeamForm";
 import CalendarView from "./pages/CalendarView";
 import NotFound from "./pages/NotFound";
+
+// User Management Pages
+import EmployeeList from "./pages/users/EmployeeList";
+import EmployeeForm from "./pages/users/EmployeeForm";
+import TechnicianList from "./pages/users/TechnicianList";
+import TechnicianForm from "./pages/users/TechnicianForm";
 
 const queryClient = new QueryClient();
 
@@ -45,8 +52,18 @@ const App = () => (
               <Route path="/requests/new" element={<NewRequest />} />
               <Route path="/requests/:id" element={<RequestDetail />} />
               <Route path="/teams" element={<TeamsList />} />
+              <Route path="/teams/add" element={<TeamForm />} />
+              <Route path="/teams/edit/:id" element={<TeamForm />} />
               <Route path="/teams/:id" element={<TeamDetail />} />
               <Route path="/calendar" element={<CalendarView />} />
+              
+              {/* User Management Routes */}
+              <Route path="/users/employees" element={<EmployeeList />} />
+              <Route path="/users/employees/add" element={<EmployeeForm />} />
+              <Route path="/users/employees/edit/:id" element={<EmployeeForm />} />
+              <Route path="/users/technicians" element={<TechnicianList />} />
+              <Route path="/users/technicians/add" element={<TechnicianForm />} />
+              <Route path="/users/technicians/edit/:id" element={<TechnicianForm />} />
             </Route>
 
             {/* 404 */}

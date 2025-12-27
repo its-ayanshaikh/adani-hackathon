@@ -7,23 +7,60 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
+// Email validation helper
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const validateEmail = (value: string) => {
+    if (!value) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!isValidEmail(value)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    if (emailError) {
+      validateEmail(value);
+    }
+  };
+
+  const handleEmailBlur = () => {
+    validateEmail(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
+
+    // Validate email
+    if (!validateEmail(email)) {
+      return;
+    }
+
+    if (!password) {
       toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Password is required',
+        variant: 'destructive',
       });
       return;
     }
@@ -34,15 +71,15 @@ export default function Login() {
 
     if (result.success) {
       toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in"
+        title: 'Welcome back!',
+        description: result.message,
       });
       navigate('/');
     } else {
       toast({
-        title: "Login failed",
+        title: 'Login failed',
         description: result.message,
-        variant: "destructive"
+        variant: 'destructive',
       });
     }
   };
@@ -57,7 +94,8 @@ export default function Login() {
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">MaintainX</h1>
           <p className="text-lg text-white/80">
-            Streamline your maintenance operations with our powerful equipment management platform.
+            Streamline your maintenance operations with our powerful equipment
+            management platform.
           </p>
           <div className="mt-12 grid grid-cols-3 gap-4 text-white/60 text-sm">
             <div className="p-4 bg-white/5 rounded-lg">
@@ -89,7 +127,9 @@ export default function Login() {
 
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold">Welcome back</h2>
-            <p className="text-muted-foreground mt-2">Enter your credentials to access your account</p>
+            <p className="text-muted-foreground mt-2">
+              Enter your credentials to access your account
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,10 +142,14 @@ export default function Login() {
                   type="email"
                   placeholder="name@company.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  onChange={handleEmailChange}
+                  onBlur={handleEmailBlur}
+                  className={`pl-10 ${emailError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                 />
               </div>
+              {emailError && (
+                <p className="text-sm text-destructive">{emailError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -125,7 +169,11 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -135,7 +183,10 @@ export default function Login() {
                 <input type="checkbox" className="rounded border-border" />
                 <span>Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-primary hover:underline"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -154,20 +205,13 @@ export default function Login() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
+            <Link
+              to="/signup"
+              className="text-primary hover:underline font-medium"
+            >
               Sign up
             </Link>
           </p>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Demo Credentials:</p>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p><span className="font-medium">Admin:</span> admin@maintainx.com / admin123</p>
-              <p><span className="font-medium">Manager:</span> sarah@maintainx.com / sarah123</p>
-              <p><span className="font-medium">Technician:</span> mike@maintainx.com / mike123</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

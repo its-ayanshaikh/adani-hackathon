@@ -1,15 +1,27 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Mail, Phone, Briefcase, ClipboardList } from 'lucide-react';
+import { Mail, Phone, Briefcase, Wrench } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Avatar } from '@/components/Avatar';
 import { RequestCard } from '@/components/RequestCard';
-import { teams, requests, equipment } from '@/data/mockData';
+import { requests, equipment } from '@/data/mockData';
+import { getTeamById, getTechnicians, Technician } from '@/lib/localStorage';
+import { cn } from '@/lib/utils';
 
 const TeamDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
 
-  const team = teams.find(t => t.id === id);
+  const team = id ? getTeamById(id) : undefined;
+
+  useEffect(() => {
+    if (team) {
+      const allTechnicians = getTechnicians();
+      const teamTechnicians = allTechnicians.filter(t => t.teamId === team.id);
+      setTechnicians(teamTechnicians);
+    }
+  }, [team]);
   
   if (!team) {
     return (
@@ -26,11 +38,22 @@ const TeamDetail = () => {
   const activeRequests = teamRequests.filter(r => r.stage !== 'repaired' && r.stage !== 'scrap');
   const assignedEquipment = equipment.filter(e => e.maintenanceTeamId === team.id);
 
+  const getStatusColor = (status: Technician['status']) => {
+    switch (status) {
+      case 'available':
+        return 'bg-green-100 text-green-700';
+      case 'busy':
+        return 'bg-orange-100 text-orange-700';
+      case 'off-duty':
+        return 'bg-gray-100 text-gray-600';
+    }
+  };
+
   return (
     <div className="app-shell">
       <PageHeader 
         title={team.name}
-        subtitle={`${team.members.length} members`}
+        subtitle={`${technicians.length} technicians`}
         showBack
       />
 
@@ -39,8 +62,8 @@ const TeamDetail = () => {
           {/* Stats */}
           <section className="grid grid-cols-3 gap-3">
             <div className="p-4 bg-card rounded-xl border border-border text-center">
-              <p className="text-2xl font-bold">{team.members.length}</p>
-              <p className="text-xs text-muted-foreground">Members</p>
+              <p className="text-2xl font-bold">{technicians.length}</p>
+              <p className="text-xs text-muted-foreground">Technicians</p>
             </div>
             <div className="p-4 bg-card rounded-xl border border-border text-center">
               <p className="text-2xl font-bold">{activeRequests.length}</p>
@@ -52,26 +75,48 @@ const TeamDetail = () => {
             </div>
           </section>
 
-          {/* Team Members */}
+          {/* Team Technicians */}
           <section>
-            <h2 className="text-base font-semibold font-display mb-3">Team Members</h2>
-            <div className="space-y-3">
-              {team.members.map(member => (
-                <div
-                  key={member.id}
-                  className="p-4 bg-card rounded-xl border border-border flex items-center gap-4"
-                >
-                  <Avatar initials={member.avatar} size="lg" />
-                  <div className="flex-1">
-                    <p className="font-semibold">{member.name}</p>
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Briefcase className="w-3.5 h-3.5" />
-                      <span>{member.role}</span>
+            <h2 className="text-base font-semibold font-display mb-3">Technicians ({technicians.length})</h2>
+            {technicians.length > 0 ? (
+              <div className="space-y-3">
+                {technicians.map(tech => (
+                  <div
+                    key={tech.id}
+                    onClick={() => navigate(`/users/technicians/edit/${tech.id}`)}
+                    className="p-4 bg-card rounded-xl border border-border flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
+                  >
+                    <Avatar initials={`${tech.firstName[0]}${tech.lastName[0]}`} size="lg" />
+                    <div className="flex-1">
+                      <p className="font-semibold">{tech.firstName} {tech.lastName}</p>
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Wrench className="w-3.5 h-3.5" />
+                        <span>{tech.specialization}</span>
+                      </div>
                     </div>
+                    <span
+                      className={cn(
+                        'px-2 py-1 rounded-full text-xs font-medium capitalize',
+                        getStatusColor(tech.status)
+                      )}
+                    >
+                      {tech.status.replace('-', ' ')}
+                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 bg-card rounded-xl border border-border text-center">
+                <Wrench className="w-10 h-10 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-muted-foreground">No technicians in this team yet</p>
+                <button 
+                  onClick={() => navigate('/users/technicians/add')}
+                  className="mt-2 text-primary text-sm font-medium"
+                >
+                  Add Technician
+                </button>
+              </div>
+            )}
           </section>
 
           {/* Active Requests */}
