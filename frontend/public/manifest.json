@@ -1,0 +1,52 @@
+{
+  "name": "GearGuard - Maintenance Tracker",
+  "short_name": "GearGuard",
+  "description": "The ultimate maintenance management system. Track equipment, manage teams, and handle maintenance requests with ease.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "business", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "New Request",
+      "short_name": "New Request",
+      "description": "Create a new maintenance request",
+      "url": "/requests/new",
+      "icons": [
+        {
+          "src": "/icon-192.svg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Equipment",
+      "short_name": "Equipment",
+      "description": "View equipment list",
+      "url": "/equipment",
+      "icons": [
+        {
+          "src": "/icon-192.svg",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

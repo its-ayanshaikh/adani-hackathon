@@ -2,15 +2,17 @@ import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
+import { GearGuardLoader } from './GearGuardLoader';
+import { InstallPWA } from './InstallPWA';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
 
 export function Layout() {
   const { isAuthenticated, isLoading } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
+  const [showLoader, setShowLoader] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved ? JSON.parse(saved) : false;
@@ -20,12 +22,20 @@ export function Layout() {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+  // Show loader for minimum 2 seconds
+  useEffect(() => {
+    if (isLoading) {
+      setShowLoader(true);
+    } else {
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  if (showLoader) {
+    return <GearGuardLoader />;
   }
 
   if (!isAuthenticated) {
@@ -55,6 +65,9 @@ export function Layout() {
 
       {/* Mobile Bottom Nav */}
       {isMobile && <BottomNav />}
+
+      {/* PWA Install Prompt */}
+      <InstallPWA />
     </div>
   );
 }

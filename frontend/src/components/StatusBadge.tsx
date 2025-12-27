@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { RequestStage, stageLabels } from '@/data/mockData';
+import { RequestStage, stageLabels } from '@/lib/localStorage';
 
 interface StatusBadgeProps {
   stage: RequestStage;
@@ -7,7 +7,7 @@ interface StatusBadgeProps {
 }
 
 const stageClasses: Record<RequestStage, string> = {
-  new: 'bg-info/15 text-info border-info/30',
+  submitted: 'bg-info/15 text-info border-info/30',
   in_progress: 'bg-primary/15 text-primary border-primary/30',
   repaired: 'bg-success/15 text-success border-success/30',
   scrap: 'bg-muted text-muted-foreground border-muted-foreground/30',

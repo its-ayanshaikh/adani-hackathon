@@ -1,18 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, parseISO } from 'date-fns';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
-import { requests, getEquipmentById, getPreventiveRequests } from '@/data/mockData';
+import { getRequests, MaintenanceRequest } from '@/lib/localStorage';
 import { cn } from '@/lib/utils';
 
 const CalendarView = () => {
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [preventiveRequests, setPreventiveRequests] = useState<MaintenanceRequest[]>([]);
 
-  const preventiveRequests = getPreventiveRequests();
+  useEffect(() => {
+    const allRequests = getRequests();
+    // Filter preventive requests with scheduled dates
+    const preventive = allRequests.filter(r => r.type === 'preventive' && r.scheduledDate);
+    setPreventiveRequests(preventive);
+  }, []);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -144,7 +150,6 @@ const CalendarView = () => {
               ) : (
                 <div className="space-y-2">
                   {selectedDateRequests.map(request => {
-                    const equipment = getEquipmentById(request.equipmentId);
                     return (
                       <div
                         key={request.id}
@@ -152,12 +157,13 @@ const CalendarView = () => {
                         className="p-4 bg-card rounded-xl border border-border touch-feedback"
                       >
                         <p className="font-medium">{request.subject}</p>
-                        {equipment && (
-                          <p className="text-sm text-muted-foreground">{equipment.name}</p>
-                        )}
-                        <span className="inline-block mt-2 px-2 py-0.5 bg-info/15 text-info text-xs font-medium rounded">
-                          Preventive
-                        </span>
+                        <p className="text-sm text-muted-foreground">{request.equipmentName}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-block px-2 py-0.5 bg-info/15 text-info text-xs font-medium rounded">
+                            Preventive
+                          </span>
+                          <span className="text-xs text-muted-foreground">{request.teamName}</span>
+                        </div>
                       </div>
                     );
                   })}
@@ -175,7 +181,6 @@ const CalendarView = () => {
                 .sort((a, b) => new Date(a.scheduledDate!).getTime() - new Date(b.scheduledDate!).getTime())
                 .slice(0, 5)
                 .map(request => {
-                  const equipment = getEquipmentById(request.equipmentId);
                   return (
                     <div
                       key={request.id}
@@ -184,9 +189,7 @@ const CalendarView = () => {
                     >
                       <div>
                         <p className="font-medium">{request.subject}</p>
-                        {equipment && (
-                          <p className="text-sm text-muted-foreground">{equipment.name}</p>
-                        )}
+                        <p className="text-sm text-muted-foreground">{request.equipmentName}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">

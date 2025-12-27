@@ -208,3 +208,243 @@ export const deleteTechnician = (id: string): boolean => {
   localStorage.setItem(TECHNICIANS_KEY, JSON.stringify(filtered));
   return true;
 };
+
+// ==================== EQUIPMENT CATEGORIES ====================
+
+export interface EquipmentCategory {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+}
+
+const EQUIPMENT_CATEGORIES_KEY = 'odoo_equipment_categories';
+
+export const getEquipmentCategories = (): EquipmentCategory[] => {
+  const data = localStorage.getItem(EQUIPMENT_CATEGORIES_KEY);
+  if (!data) {
+    localStorage.setItem(EQUIPMENT_CATEGORIES_KEY, JSON.stringify([]));
+    return [];
+  }
+  return JSON.parse(data);
+};
+
+export const getEquipmentCategoryById = (id: string): EquipmentCategory | undefined => {
+  const categories = getEquipmentCategories();
+  return categories.find((c) => c.id === id);
+};
+
+export const addEquipmentCategory = (category: Omit<EquipmentCategory, 'id' | 'createdAt'>): EquipmentCategory => {
+  const categories = getEquipmentCategories();
+  const newCategory: EquipmentCategory = {
+    ...category,
+    id: generateId(),
+    createdAt: new Date().toISOString(),
+  };
+  categories.push(newCategory);
+  localStorage.setItem(EQUIPMENT_CATEGORIES_KEY, JSON.stringify(categories));
+  return newCategory;
+};
+
+export const updateEquipmentCategory = (id: string, updates: Partial<EquipmentCategory>): EquipmentCategory | null => {
+  const categories = getEquipmentCategories();
+  const index = categories.findIndex((c) => c.id === id);
+  if (index === -1) return null;
+  categories[index] = { ...categories[index], ...updates };
+  localStorage.setItem(EQUIPMENT_CATEGORIES_KEY, JSON.stringify(categories));
+  return categories[index];
+};
+
+export const deleteEquipmentCategory = (id: string): boolean => {
+  const categories = getEquipmentCategories();
+  const filtered = categories.filter((c) => c.id !== id);
+  if (filtered.length === categories.length) return false;
+  localStorage.setItem(EQUIPMENT_CATEGORIES_KEY, JSON.stringify(filtered));
+  return true;
+};
+
+// ==================== EQUIPMENT ====================
+
+export interface Equipment {
+  id: string;
+  name: string;
+  serialNumber: string;
+  categoryId: string;
+  categoryName: string;
+  purchaseDate: string;
+  warrantyPeriod: number; // in months
+  location: string;
+  employeeId: string;
+  employeeName: string;
+  teamId: string;
+  teamName: string;
+  technicianId: string;
+  technicianName: string;
+  status: 'operational' | 'maintenance' | 'out-of-order';
+  createdAt: string;
+}
+
+const EQUIPMENT_KEY = 'odoo_equipment';
+
+export const getEquipmentList = (): Equipment[] => {
+  const data = localStorage.getItem(EQUIPMENT_KEY);
+  if (!data) {
+    localStorage.setItem(EQUIPMENT_KEY, JSON.stringify([]));
+    return [];
+  }
+  return JSON.parse(data);
+};
+
+export const getEquipmentById = (id: string): Equipment | undefined => {
+  const equipment = getEquipmentList();
+  return equipment.find((e) => e.id === id);
+};
+
+export const addEquipment = (equipment: Omit<Equipment, 'id' | 'createdAt'>): Equipment => {
+  const equipmentList = getEquipmentList();
+  const newEquipment: Equipment = {
+    ...equipment,
+    id: generateId(),
+    createdAt: new Date().toISOString(),
+  };
+  equipmentList.push(newEquipment);
+  localStorage.setItem(EQUIPMENT_KEY, JSON.stringify(equipmentList));
+  return newEquipment;
+};
+
+export const updateEquipment = (id: string, updates: Partial<Equipment>): Equipment | null => {
+  const equipmentList = getEquipmentList();
+  const index = equipmentList.findIndex((e) => e.id === id);
+  if (index === -1) return null;
+  equipmentList[index] = { ...equipmentList[index], ...updates };
+  localStorage.setItem(EQUIPMENT_KEY, JSON.stringify(equipmentList));
+  return equipmentList[index];
+};
+
+export const deleteEquipment = (id: string): boolean => {
+  const equipmentList = getEquipmentList();
+  const filtered = equipmentList.filter((e) => e.id !== id);
+  if (filtered.length === equipmentList.length) return false;
+  localStorage.setItem(EQUIPMENT_KEY, JSON.stringify(filtered));
+  return true;
+};
+
+// ==================== MAINTENANCE REQUESTS ====================
+
+export type RequestStage = 'submitted' | 'in_progress' | 'repaired' | 'scrap';
+export type RequestType = 'corrective' | 'preventive';
+export type RequestPriority = 'low' | 'medium' | 'high';
+
+export interface MaintenanceRequest {
+  id: string;
+  subject: string;
+  description: string;
+  equipmentId: string;
+  equipmentName: string;
+  type: RequestType;
+  priority: RequestPriority;
+  stage: RequestStage;
+  teamId: string;
+  teamName: string;
+  technicianId: string;
+  technicianName: string;
+  scheduledDate?: string; // For preventive maintenance
+  duration?: number; // Hours spent on repair
+  completedAt?: string; // When repair was completed
+  scrapNote?: string; // Note when equipment is scrapped
+  createdAt: string;
+  updatedAt: string;
+}
+
+const REQUESTS_KEY = 'odoo_requests';
+
+export const stageLabels: Record<RequestStage, string> = {
+  submitted: 'Submitted',
+  in_progress: 'In Progress',
+  repaired: 'Repaired',
+  scrap: 'Scrapped',
+};
+
+export const getRequests = (): MaintenanceRequest[] => {
+  const data = localStorage.getItem(REQUESTS_KEY);
+  if (!data) {
+    localStorage.setItem(REQUESTS_KEY, JSON.stringify([]));
+    return [];
+  }
+  return JSON.parse(data);
+};
+
+export const getRequestById = (id: string): MaintenanceRequest | undefined => {
+  const requests = getRequests();
+  return requests.find((r) => r.id === id);
+};
+
+export const addRequest = (request: Omit<MaintenanceRequest, 'id' | 'stage' | 'createdAt' | 'updatedAt'>): MaintenanceRequest => {
+  const requests = getRequests();
+  const newRequest: MaintenanceRequest = {
+    ...request,
+    id: generateId(),
+    stage: 'submitted', // Default status
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  requests.push(newRequest);
+  localStorage.setItem(REQUESTS_KEY, JSON.stringify(requests));
+  
+  // Update equipment status to maintenance
+  if (request.equipmentId) {
+    updateEquipment(request.equipmentId, { status: 'maintenance' });
+  }
+  
+  return newRequest;
+};
+
+export const updateRequest = (id: string, updates: Partial<MaintenanceRequest>): MaintenanceRequest | null => {
+  const requests = getRequests();
+  const index = requests.findIndex((r) => r.id === id);
+  if (index === -1) return null;
+  
+  const oldRequest = requests[index];
+  
+  // Add completedAt timestamp when moving to repaired
+  if (updates.stage === 'repaired' && !updates.completedAt) {
+    updates.completedAt = new Date().toISOString();
+  }
+  
+  requests[index] = { 
+    ...requests[index], 
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+  localStorage.setItem(REQUESTS_KEY, JSON.stringify(requests));
+  
+  // Update equipment status based on request stage
+  if (updates.stage && oldRequest.equipmentId) {
+    let equipmentStatus: Equipment['status'] = 'maintenance';
+    
+    if (updates.stage === 'repaired') {
+      equipmentStatus = 'operational';
+    } else if (updates.stage === 'scrap') {
+      equipmentStatus = 'out-of-order';
+    } else {
+      equipmentStatus = 'maintenance';
+    }
+    
+    updateEquipment(oldRequest.equipmentId, { status: equipmentStatus });
+  }
+  
+  return requests[index];
+};
+
+export const deleteRequest = (id: string): boolean => {
+  const requests = getRequests();
+  const filtered = requests.filter((r) => r.id !== id);
+  if (filtered.length === requests.length) return false;
+  localStorage.setItem(REQUESTS_KEY, JSON.stringify(filtered));
+  return true;
+};
+
+export const updateRequestStage = (id: string, stage: RequestStage): MaintenanceRequest | null => {
+  return updateRequest(id, { stage });
+};
+

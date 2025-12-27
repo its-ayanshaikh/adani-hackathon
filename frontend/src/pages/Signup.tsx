@@ -159,30 +159,31 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-amber-500 to-amber-600 items-center justify-center p-12">
         <div className="max-w-md text-center">
-          <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-8">
+          <div className="relative w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
+            <div className="absolute inset-2 border-2 border-white/30 rounded-lg" />
             <Wrench className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">MaintainX</h1>
-          <p className="text-lg text-white/80">
+          <h1 className="text-4xl font-bold text-white mb-4">GearGuard</h1>
+          <p className="text-lg text-white/90">
             Join thousands of teams managing their equipment efficiently.
           </p>
           <div className="mt-12 space-y-4 text-left">
-            <div className="flex items-center gap-3 text-white/80">
-              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-3 text-white/90">
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
                 <span className="text-white">✓</span>
               </div>
               <span>Track all your equipment in one place</span>
             </div>
-            <div className="flex items-center gap-3 text-white/80">
-              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-3 text-white/90">
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
                 <span className="text-white">✓</span>
               </div>
               <span>Manage maintenance requests easily</span>
             </div>
-            <div className="flex items-center gap-3 text-white/80">
-              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-3 text-white/90">
+              <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
                 <span className="text-white">✓</span>
               </div>
               <span>Collaborate with your team seamlessly</span>
@@ -195,17 +196,18 @@ export default function Signup() {
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Wrench className="w-6 h-6 text-primary-foreground" />
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <div className="relative w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="absolute inset-1.5 border-2 border-white/30 rounded-lg" />
+              <Wrench className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold">MaintainX</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-amber-500 bg-clip-text text-transparent">GearGuard</span>
           </div>
 
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold">Create an account</h2>
             <p className="text-muted-foreground mt-2">
-              Get started with MaintainX today
+              Get started with GearGuard today
             </p>
           </div>
 

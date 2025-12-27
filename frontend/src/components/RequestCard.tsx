@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MaintenanceRequest, getEquipmentById, getMemberById } from '@/data/mockData';
+import { MaintenanceRequest, getEquipmentList, getTechnicians } from '@/lib/localStorage';
 import { StatusBadge } from './StatusBadge';
 import { PriorityBadge } from './PriorityBadge';
 import { Avatar } from './Avatar';
@@ -14,8 +14,10 @@ interface RequestCardProps {
 
 export function RequestCard({ request, compact = false }: RequestCardProps) {
   const navigate = useNavigate();
-  const equipment = getEquipmentById(request.equipmentId);
-  const assignee = request.assignedToId ? getMemberById(request.assignedToId) : null;
+  const equipmentList = getEquipmentList();
+  const technicians = getTechnicians();
+  const equipment = equipmentList.find(e => e.id === request.equipmentId);
+  const assignee = request.assignedToId ? technicians.find(t => t.id === request.assignedToId) : null;
 
   const displayDate = request.scheduledDate || request.dueDate;
 
@@ -37,7 +39,7 @@ export function RequestCard({ request, compact = false }: RequestCardProps) {
           )}
         </div>
         {assignee && (
-          <Avatar initials={assignee.avatar} size="sm" />
+          <Avatar initials={assignee.name.slice(0, 2).toUpperCase()} size="sm" />
         )}
       </div>
 
