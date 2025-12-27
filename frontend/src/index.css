@@ -1,0 +1,262 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* GearGuard Design System - Industrial Maintenance Theme */
+
+@layer base {
+  :root {
+    /* Core palette - Industrial Orange & Slate */
+    --background: 210 20% 98%;
+    --foreground: 220 20% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    /* Primary - Industrial Orange */
+    --primary: 32 95% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Cool Slate */
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 32 85% 95%;
+    --accent-foreground: 32 95% 40%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 32 95% 52%;
+
+    --radius: 0.75rem;
+
+    /* Stage colors for Kanban */
+    --stage-new: 199 89% 48%;
+    --stage-progress: 32 95% 52%;
+    --stage-repaired: 142 76% 36%;
+    --stage-scrap: 0 0% 45%;
+
+    /* Sidebar */
+    --sidebar-background: 215 25% 20%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 32 95% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 27%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 20% 30%;
+    --sidebar-ring: 32 95% 52%;
+  }
+
+  .dark {
+    --background: 220 20% 8%;
+    --foreground: 210 20% 98%;
+
+    --card: 220 18% 12%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 220 18% 12%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 32 95% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 20% 25%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 215 18% 18%;
+    --muted-foreground: 215 15% 60%;
+
+    --accent: 32 50% 20%;
+    --accent-foreground: 32 95% 65%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 18% 20%;
+    --input: 215 18% 20%;
+    --ring: 32 95% 52%;
+
+    --sidebar-background: 220 20% 6%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 32 95% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 20% 15%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 215 18% 15%;
+    --sidebar-ring: 32 95% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Mobile App Shell */
+  .app-shell {
+    @apply min-h-screen flex flex-col bg-background;
+  }
+
+  .app-content {
+    @apply flex-1 overflow-y-auto pb-20;
+  }
+
+  /* Status Badges */
+  .status-new {
+    @apply bg-info text-info-foreground;
+  }
+
+  .status-progress {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .status-repaired {
+    @apply bg-success text-success-foreground;
+  }
+
+  .status-scrap {
+    @apply bg-muted-foreground text-white;
+  }
+
+  /* Kanban Column */
+  .kanban-column {
+    @apply flex-shrink-0 w-72 bg-muted/50 rounded-xl p-3;
+  }
+
+  /* Request Card */
+  .request-card {
+    @apply bg-card rounded-lg p-3 shadow-sm border border-border 
+           transition-all duration-200 active:scale-[0.98];
+  }
+
+  .request-card-overdue {
+    @apply border-l-4 border-l-destructive;
+  }
+
+  /* Equipment Card */
+  .equipment-card {
+    @apply bg-card rounded-xl p-4 shadow-sm border border-border
+           transition-all duration-200 active:scale-[0.98];
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border
+           flex items-center justify-around py-2 px-4 z-50
+           safe-area-inset-bottom;
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center gap-1 p-2 rounded-lg
+           text-muted-foreground transition-colors;
+  }
+
+  .bottom-nav-item.active {
+    @apply text-primary;
+  }
+
+  /* Top Header */
+  .top-header {
+    @apply sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border
+           px-4 py-3 z-40;
+  }
+
+  /* FAB */
+  .fab {
+    @apply fixed bottom-24 right-4 w-14 h-14 rounded-full bg-primary
+           text-primary-foreground shadow-lg flex items-center justify-center
+           transition-transform active:scale-95 z-40;
+  }
+
+  /* Safe area padding for PWA */
+  .safe-area-inset-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-inset-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  /* Touch feedback */
+  .touch-feedback {
+    @apply transition-all duration-150 active:scale-[0.97] active:opacity-80;
+  }
+
+  /* Card hover/tap states */
+  .card-interactive {
+    @apply cursor-pointer transition-all duration-200
+           hover:shadow-md active:scale-[0.98];
+  }
+
+  /* Empty state */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-12 px-4 text-center;
+  }
+
+  /* Loading skeleton */
+  .skeleton-pulse {
+    @apply animate-pulse bg-muted rounded;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar but allow scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-warning;
+  }
+
+  /* Safe area for mobile */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
