@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -6,23 +6,67 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { equipment, teams, categories, RequestType } from '@/data/mockData';
+import { 
+  getEquipmentList, 
+  getTeams, 
+  getTechnicians,
+  addRequest,
+  Equipment,
+  Team,
+  Technician,
+  RequestType,
+  RequestPriority,
+} from '@/lib/localStorage';
 import { toast } from '@/hooks/use-toast';
 
 const NewRequest = () => {
   const navigate = useNavigate();
   
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [filteredTechnicians, setFilteredTechnicians] = useState<Technician[]>([]);
+
   const [formData, setFormData] = useState({
     subject: '',
     description: '',
     equipmentId: '',
     type: 'corrective' as RequestType,
-    priority: 'medium' as 'low' | 'medium' | 'high',
+    priority: 'medium' as RequestPriority,
     scheduledDate: '',
+    teamId: '',
+    technicianId: '',
   });
 
+  useEffect(() => {
+    setEquipment(getEquipmentList());
+    setTeams(getTeams());
+    setTechnicians(getTechnicians());
+  }, []);
+
+  // Auto-fill team when equipment is selected
   const selectedEquipment = equipment.find(e => e.id === formData.equipmentId);
-  const autoFilledTeam = selectedEquipment ? teams.find(t => t.id === selectedEquipment.maintenanceTeamId) : null;
+  
+  useEffect(() => {
+    if (selectedEquipment?.teamId) {
+      setFormData(prev => ({ ...prev, teamId: selectedEquipment.teamId }));
+    }
+  }, [selectedEquipment]);
+
+  // Filter technicians based on selected team
+  useEffect(() => {
+    if (formData.teamId) {
+      const teamTechs = technicians.filter(t => t.teamId === formData.teamId);
+      setFilteredTechnicians(teamTechs);
+      if (!teamTechs.find(t => t.id === formData.technicianId)) {
+        setFormData(prev => ({ ...prev, technicianId: '' }));
+      }
+    } else {
+      setFilteredTechnicians([]);
+    }
+  }, [formData.teamId, technicians]);
+
+  const selectedTeam = teams.find(t => t.id === formData.teamId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +79,22 @@ const NewRequest = () => {
       });
       return;
     }
+
+    const selectedTechnician = technicians.find(t => t.id === formData.technicianId);
+
+    addRequest({
+      subject: formData.subject,
+      description: formData.description,
+      equipmentId: formData.equipmentId,
+      equipmentName: selectedEquipment?.name || '',
+      type: formData.type,
+      priority: formData.priority,
+      teamId: formData.teamId,
+      teamName: selectedTeam?.name || '',
+      technicianId: formData.technicianId,
+      technicianName: selectedTechnician ? `${selectedTechnician.firstName} ${selectedTechnician.lastName}` : '',
+      scheduledDate: formData.scheduledDate,
+    });
 
     toast({
       title: 'Request created',
@@ -107,25 +167,77 @@ const NewRequest = () => {
                 <SelectValue placeholder="Select equipment" />
               </SelectTrigger>
               <SelectContent>
-                {equipment.map(eq => (
-                  <SelectItem key={eq.id} value={eq.id}>
-                    {eq.name} - {eq.category}
-                  </SelectItem>
-                ))}
+                {equipment.length === 0 ? (
+                  <SelectItem value="none" disabled>No equipment available</SelectItem>
+                ) : (
+                  equipment.map(eq => (
+                    <SelectItem key={eq.id} value={eq.id}>
+                      {eq.name} - {eq.categoryName || 'No Category'}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
 
           {/* Auto-filled Team */}
-          {autoFilledTeam && (
+          {selectedTeam && (
             <div className="p-4 bg-accent rounded-xl border border-accent-foreground/20">
               <p className="text-sm text-accent-foreground font-medium mb-1">
                 Auto-assigned Team
               </p>
-              <p className="font-semibold">{autoFilledTeam.name}</p>
+              <p className="font-semibold">{selectedTeam.name}</p>
               <p className="text-xs text-muted-foreground">
                 Based on equipment maintenance assignment
               </p>
+            </div>
+          )}
+
+          {/* Team Selection (if not auto-filled) */}
+          {!selectedEquipment?.teamId && (
+            <div className="space-y-2">
+              <Label>Maintenance Team</Label>
+              <Select
+                value={formData.teamId}
+                onValueChange={(value) => setFormData({ ...formData, teamId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select team" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.map(team => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Technician Selection */}
+          {formData.teamId && (
+            <div className="space-y-2">
+              <Label>Assign Technician</Label>
+              <Select
+                value={formData.technicianId}
+                onValueChange={(value) => setFormData({ ...formData, technicianId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select technician (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Unassigned</SelectItem>
+                  {filteredTechnicians.map(tech => (
+                    <SelectItem key={tech.id} value={tech.id}>
+                      {tech.firstName} {tech.lastName} - {tech.specialization}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {filteredTechnicians.length === 0 && (
+                <p className="text-xs text-muted-foreground">No technicians in this team</p>
+              )}
             </div>
           )}
 

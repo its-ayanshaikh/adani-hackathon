@@ -12,8 +12,6 @@ import Signup from "./pages/Signup";
 
 // App Pages
 import Dashboard from "./pages/Dashboard";
-import EquipmentList from "./pages/EquipmentList";
-import EquipmentDetail from "./pages/EquipmentDetail";
 import RequestList from "./pages/RequestList";
 import RequestDetail from "./pages/RequestDetail";
 import NewRequest from "./pages/NewRequest";
@@ -22,6 +20,14 @@ import TeamDetail from "./pages/TeamDetail";
 import TeamForm from "./pages/TeamForm";
 import CalendarView from "./pages/CalendarView";
 import NotFound from "./pages/NotFound";
+
+// Equipment Pages
+import EquipmentLayout from "./pages/equipment/EquipmentLayout";
+import EquipmentListPage from "./pages/equipment/EquipmentListPage";
+import EquipmentForm from "./pages/equipment/EquipmentForm";
+import EquipmentDetailPage from "./pages/equipment/EquipmentDetailPage";
+import CategoryList from "./pages/equipment/CategoryList";
+import CategoryForm from "./pages/equipment/CategoryForm";
 
 // User Management Pages
 import EmployeeList from "./pages/users/EmployeeList";
@@ -46,8 +52,19 @@ const App = () => (
             {/* Protected Routes */}
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/equipment" element={<EquipmentList />} />
-              <Route path="/equipment/:id" element={<EquipmentDetail />} />
+              
+              {/* Equipment Routes with Tabs */}
+              <Route path="/equipment" element={<EquipmentLayout />}>
+                <Route index element={<EquipmentListPage />} />
+                <Route path="list" element={<EquipmentListPage />} />
+                <Route path="list/add" element={<EquipmentForm />} />
+                <Route path="list/edit/:id" element={<EquipmentForm />} />
+                <Route path="categories" element={<CategoryList />} />
+                <Route path="categories/add" element={<CategoryForm />} />
+                <Route path="categories/edit/:id" element={<CategoryForm />} />
+              </Route>
+              <Route path="/equipment/:id" element={<EquipmentDetailPage />} />
+              
               <Route path="/requests" element={<RequestList />} />
               <Route path="/requests/new" element={<NewRequest />} />
               <Route path="/requests/:id" element={<RequestDetail />} />

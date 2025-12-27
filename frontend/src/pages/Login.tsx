@@ -87,26 +87,26 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-amber-500 to-amber-600 items-center justify-center p-12">
         <div className="max-w-md text-center">
-          <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-8">
+          <div className="relative w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
+            <div className="absolute inset-2 border-2 border-white/30 rounded-lg" />
             <Wrench className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">MaintainX</h1>
-          <p className="text-lg text-white/80">
-            Streamline your maintenance operations with our powerful equipment
-            management platform.
+          <h1 className="text-4xl font-bold text-white mb-4">GearGuard</h1>
+          <p className="text-lg text-white/90">
+            The ultimate maintenance management system. Track equipment, manage teams, and handle maintenance requests with ease.
           </p>
-          <div className="mt-12 grid grid-cols-3 gap-4 text-white/60 text-sm">
-            <div className="p-4 bg-white/5 rounded-lg">
+          <div className="mt-12 grid grid-cols-3 gap-4 text-white/80 text-sm">
+            <div className="p-4 bg-white/10 rounded-lg backdrop-blur-sm">
               <div className="text-2xl font-bold text-white">500+</div>
               <div>Equipment</div>
             </div>
-            <div className="p-4 bg-white/5 rounded-lg">
+            <div className="p-4 bg-white/10 rounded-lg backdrop-blur-sm">
               <div className="text-2xl font-bold text-white">50+</div>
               <div>Teams</div>
             </div>
-            <div className="p-4 bg-white/5 rounded-lg">
+            <div className="p-4 bg-white/10 rounded-lg backdrop-blur-sm">
               <div className="text-2xl font-bold text-white">99%</div>
               <div>Uptime</div>
             </div>
@@ -118,11 +118,12 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Wrench className="w-6 h-6 text-primary-foreground" />
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <div className="relative w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="absolute inset-1.5 border-2 border-white/30 rounded-lg" />
+              <Wrench className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold">MaintainX</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-amber-500 bg-clip-text text-transparent">GearGuard</span>
           </div>
 
           <div className="text-center mb-8">

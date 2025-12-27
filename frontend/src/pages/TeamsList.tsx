@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MoreVertical, Edit, Trash2, Users, Wrench } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Users, Wrench, Monitor } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getTeams, deleteTeam, getTechnicians, Team, Technician } from '@/lib/localStorage';
+import { getTeams, deleteTeam, getTechnicians, getEquipmentList, Team, Technician, Equipment } from '@/lib/localStorage';
 import { useToast } from '@/hooks/use-toast';
 
 const TeamsList = () => {
@@ -17,6 +17,7 @@ const TeamsList = () => {
   const { toast } = useToast();
   const [teams, setTeams] = useState<Team[]>([]);
   const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
 
   useEffect(() => {
     loadData();
@@ -25,13 +26,20 @@ const TeamsList = () => {
   const loadData = () => {
     const teamsData = getTeams();
     const techniciansData = getTechnicians();
+    const equipmentData = getEquipmentList();
     setTeams(teamsData);
     setTechnicians(techniciansData);
+    setEquipmentList(equipmentData);
   };
 
   // Get technician count for a specific team
   const getTechnicianCount = (teamId: string) => {
     return technicians.filter(t => t.teamId === teamId).length;
+  };
+
+  // Get equipment count for a specific team
+  const getEquipmentCount = (teamId: string) => {
+    return equipmentList.filter(e => e.teamId === teamId).length;
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -106,6 +114,10 @@ const TeamsList = () => {
                         <span className="flex items-center gap-1">
                           <Wrench className="w-3.5 h-3.5" />
                           {techCount} Technicians
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Monitor className="w-3.5 h-3.5" />
+                          {getEquipmentCount(team.id)} Equipment
                         </span>
                       </div>
                     </div>

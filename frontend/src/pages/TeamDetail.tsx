@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Mail, Phone, Briefcase, Wrench } from 'lucide-react';
+import { Mail, Phone, Briefcase, Wrench, Monitor } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Avatar } from '@/components/Avatar';
 import { RequestCard } from '@/components/RequestCard';
-import { requests, equipment } from '@/data/mockData';
-import { getTeamById, getTechnicians, Technician } from '@/lib/localStorage';
+import { getTeamById, getTechnicians, getEquipmentList, getRequests, Technician, Equipment, MaintenanceRequest } from '@/lib/localStorage';
 import { cn } from '@/lib/utils';
 
 const TeamDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [assignedEquipment, setAssignedEquipment] = useState<Equipment[]>([]);
+  const [activeRequests, setActiveRequests] = useState<MaintenanceRequest[]>([]);
 
   const team = id ? getTeamById(id) : undefined;
 
@@ -20,6 +21,14 @@ const TeamDetail = () => {
       const allTechnicians = getTechnicians();
       const teamTechnicians = allTechnicians.filter(t => t.teamId === team.id);
       setTechnicians(teamTechnicians);
+
+      const allEquipment = getEquipmentList();
+      const teamEquipment = allEquipment.filter(e => e.teamId === team.id);
+      setAssignedEquipment(teamEquipment);
+
+      const allRequests = getRequests();
+      const teamActiveRequests = allRequests.filter(r => r.teamId === team.id && r.stage !== 'repaired' && r.stage !== 'scrap');
+      setActiveRequests(teamActiveRequests);
     }
   }, [team]);
   
@@ -33,10 +42,6 @@ const TeamDetail = () => {
       </div>
     );
   }
-
-  const teamRequests = requests.filter(r => r.teamId === team.id);
-  const activeRequests = teamRequests.filter(r => r.stage !== 'repaired' && r.stage !== 'scrap');
-  const assignedEquipment = equipment.filter(e => e.maintenanceTeamId === team.id);
 
   const getStatusColor = (status: Technician['status']) => {
     switch (status) {
@@ -148,25 +153,41 @@ const TeamDetail = () => {
             <h2 className="text-base font-semibold font-display mb-3">
               Assigned Equipment ({assignedEquipment.length})
             </h2>
-            <div className="space-y-2">
-              {assignedEquipment.map(eq => (
-                <div
-                  key={eq.id}
-                  onClick={() => navigate(`/equipment/${eq.id}`)}
-                  className="p-3 bg-card rounded-lg border border-border flex items-center justify-between touch-feedback"
-                >
-                  <div>
-                    <p className="font-medium text-sm">{eq.name}</p>
-                    <p className="text-xs text-muted-foreground">{eq.location}</p>
+            {assignedEquipment.length > 0 ? (
+              <div className="space-y-2">
+                {assignedEquipment.map(eq => (
+                  <div
+                    key={eq.id}
+                    onClick={() => navigate(`/equipment/${eq.id}`)}
+                    className="p-3 bg-card rounded-lg border border-border flex items-center justify-between touch-feedback"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        'w-3 h-3 rounded-full',
+                        eq.status === 'operational' ? 'bg-green-500' :
+                        eq.status === 'maintenance' ? 'bg-yellow-500' : 'bg-red-500'
+                      )} />
+                      <div>
+                        <p className="font-medium text-sm">{eq.name}</p>
+                        <p className="text-xs text-muted-foreground">{eq.location}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground capitalize">{eq.status}</span>
                   </div>
-                  {eq.openRequests > 0 && (
-                    <span className="px-2 py-0.5 bg-primary/15 text-primary text-xs font-medium rounded-full">
-                      {eq.openRequests}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 bg-card rounded-xl border border-border text-center">
+                <Monitor className="w-10 h-10 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-muted-foreground">No equipment assigned to this team</p>
+                <button 
+                  onClick={() => navigate('/equipment/list/add')}
+                  className="mt-2 text-primary text-sm font-medium"
+                >
+                  Add Equipment
+                </button>
+              </div>
+            )}
           </section>
         </div>
       </main>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ClipboardList, LayoutGrid, List, GripVertical } from 'lucide-react';
 import {
@@ -21,7 +21,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { EmptyState } from '@/components/EmptyState';
 import { FAB } from '@/components/FAB';
 import { Input } from '@/components/ui/input';
-import { requests as initialRequests, RequestStage, stageLabels, MaintenanceRequest } from '@/data/mockData';
+import { getRequests, updateRequestStage as updateStage, MaintenanceRequest, RequestStage, stageLabels } from '@/lib/localStorage';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -109,10 +109,19 @@ const RequestList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [filterStage, setFilterStage] = useState<RequestStage | null>(null);
-  const [requestsData, setRequestsData] = useState<MaintenanceRequest[]>(initialRequests);
+  const [requestsData, setRequestsData] = useState<MaintenanceRequest[]>([]);
   const [activeRequest, setActiveRequest] = useState<MaintenanceRequest | null>(null);
 
-  const stages: RequestStage[] = ['new', 'in_progress', 'repaired', 'scrap'];
+  const stages: RequestStage[] = ['submitted', 'in_progress', 'repaired', 'scrap'];
+
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  const loadRequests = () => {
+    const data = getRequests();
+    setRequestsData(data);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -175,11 +184,11 @@ const RequestList = () => {
     const request = requestsData.find(r => r.id === requestId);
     if (!request || request.stage === newStage) return;
 
-    setRequestsData(prev =>
-      prev.map(r =>
-        r.id === requestId ? { ...r, stage: newStage } : r
-      )
-    );
+    // Update in localStorage (this also updates equipment status)
+    updateStage(requestId, newStage);
+    
+    // Reload data
+    loadRequests();
 
     toast.success(`Moved to ${stageLabels[newStage]}`, {
       description: request.subject,
